@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="ThemeHouse_UserImpEx" title="[⌂] User Import and Export" version_string="1.0.3a" version_id="1447261019" url="http://xf.themehouse.io/" install_callback_class="ThemeHouse_Install" install_callback_method="install" uninstall_callback_class="ThemeHouse_Install" uninstall_callback_method="uninstall">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="th_user_import_form_userimpex"><![CDATA[<xen:title>{xen:phrase th_import_users_userimpex}</xen:title>
+
+<xen:form action="{xen:adminlink users/import-form}">
+	
+	<xen:if is="{$options.filename}">
+		<div class="secondaryContent"><a href="{xen:adminlink users/import-form, '', 'mode={$mode}', 'options={$options}', '_xfToken={$visitor.csrf_token_page}'}">{xen:phrase continue}</a></div>
+	</xen:if>
+	
+	<xen:foreach loop="$users" key="$i" value="$user">
+	
+		<fieldset>
+		
+			<label class="importUserCheck"><input type="checkbox" class="Disabler notHider" id="user{$i}" name="import[]" value="{$i}" checked="checked" /> {xen:phrase th_import_this_user_userimpex}</label>
+			
+			<div class="errorPanel">
+				<h3 class="errorHeading">{xen:phrase please_correct_following_errors}:</h3>
+				<div class="baseHtml errors">
+					<ol>
+					<xen:foreach loop="$user.dwErrors" value="$error">
+						<li>{xen:raw $error}</li>
+					</xen:foreach>
+					</ol>
+				</div>
+			</div>
+			
+			<div id="user{$i}_Disabler">
+				<xen:textboxunit name="users[{$i}][username]" value="{$user.username}"
+					label="{xen:phrase user_name}" />
+				<xen:textboxunit name="users[{$i}][email]" value="{$user.email}"
+					label="{xen:phrase email_address}" />
+				<xen:foreach loop="$user" key="$fieldName" value="$fieldValue">
+					<xen:if is="!is_array({$fieldValue}) && {$fieldName} != 'username' && {$fieldName} != 'email'">
+						<xen:textboxunit name="users[{$i}][{$fieldName}]" value="{$fieldValue}"
+							label="{$fields.{$fieldName}}" />
+					</xen:if>
+				</xen:foreach>
+			</div>
+		
+		</fieldset>
+	
+	</xen:foreach>
+	
+	<xen:submitunit save="{xen:phrase th_import_users_userimpex}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_user_import_userimpex"><![CDATA[<xen:title>{xen:phrase th_import_users_userimpex}</xen:title>
+
+<xen:form action="{xen:adminlink users/import-form}" upload="true">
+
+	<xen:radiounit label="" name="mode" value="upload">
+		<xen:option label="{xen:phrase import_from_uploaded_xml_file}" value="upload">
+			<xen:upload name="upload" />
+		</xen:option>
+		<xen:option label="{xen:phrase th_import_from_uploaded_csv_file_userimpex}" value="uploadcsv">
+			<xen:upload name="uploadcsv" />
+		</xen:option>
+	</xen:radiounit>
+	
+	<xen:comment>
+	<xen:checkboxunit label="{xen:phrase automatically_merge_users}:">
+		<xen:option label="{xen:phrase when_email_addresses_same}" name="options[mergeEmail]" selected="true" />
+		<xen:option label="{xen:phrase when_names_same}" name="options[mergeName]"  />
+	</xen:checkboxunit>
+	
+	<xen:checkboxunit label="">
+		<xen:option label="{xen:phrase search_for_gravatar_when_users_do_not_have_avatar}" name="options[gravatar]" />
+	</xen:checkboxunit>
+	</xen:comment>
+	
+	<xen:submitunit save="{xen:phrase import}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="user_list" modification_key="th_userList_userImpEx" description="Adds export button to full user list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:topctrl>)(.*<xen:elseif is="{\$showingAll}" />.*)(</xen:if>)#Us]]></find>
+      <replace><![CDATA[${1}
+	<a href="{xen:adminlink 'users/import'}" class="button">{xen:phrase th_import_users_userimpex}</a>
+${2}
+<input type="submit" class="button left" name="export" value="{xen:phrase th_export_users_userimpex}" />
+${3}]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="controller_pre_dispatch" execute_order="10" callback_class="ThemeHouse_Listener_ControllerPreDispatch" callback_method="controllerPreDispatch" active="1" hint="" description=""/>
+    <listener event_id="file_health_check" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_FileHealthCheck" callback_method="fileHealthCheck" active="1" hint="" description=""/>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="ThemeHouse_Listener_InitDependencies" callback_method="initDependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassController" active="0" hint="XenForo_ControllerAdmin_User" description="XenForo_ControllerAdmin_User (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassModel" active="0" hint="XenForo_Model_User" description="XenForo_Model_User (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassDataWriter" active="0" hint="XenForo_DataWriter_User" description="XenForo_DataWriter_User (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassController" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassDataWriter" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="ThemeHouse_UserImpEx_Listener_LoadClass" callback_method="loadClassModel" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="th_userImpEx" display_order="2000" debug_only="0"/>
+    <option option_id="th_userImpEx_allowUserIdSet" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value/>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_userImpEx" display_order="10"/>
+    </option>
+    <option option_id="th_userImpEx_batchImportUsers" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_userImpEx" display_order="100"/>
+    </option>
+    <option option_id="th_userImpEx_randomPassword" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_userImpEx" display_order="1"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="option_group_th_userImpEx" version_id="1405498300" version_string="1.0.1"><![CDATA[User Import and Export by ThemeHouse]]></phrase>
+    <phrase title="option_group_th_userImpEx_description" version_id="1405498300" version_string="1.0.1"><![CDATA[Options for the User Import and Export by ThemeHouse add-on.]]></phrase>
+    <phrase title="option_th_userImpEx_allowUserIdSet" version_id="1405498300" version_string="1.0.1"><![CDATA[Allow user ID to be set on import]]></phrase>
+    <phrase title="option_th_userImpEx_allowUserIdSet_explain" version_id="1405498300" version_string="1.0.1"><![CDATA[]]></phrase>
+    <phrase title="option_th_userImpEx_batchImportUsers" version_id="1425056962" version_string="1.0.2"><![CDATA[Batch Import Users]]></phrase>
+    <phrase title="option_th_userImpEx_batchImportUsers_explain" version_id="1425056962" version_string="1.0.2"><![CDATA[Entering a number here will limit the number of users imported at once, providing a 'Continue' link to import the rest of the users. Note that this only applies to CSV imports.]]></phrase>
+    <phrase title="option_th_userImpEx_randomPassword" version_id="1405498300" version_string="1.0.1"><![CDATA[Create random password if no password column]]></phrase>
+    <phrase title="option_th_userImpEx_randomPassword_explain" version_id="1405498300" version_string="1.0.1"><![CDATA[]]></phrase>
+    <phrase title="th_export_users_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Export Users]]></phrase>
+    <phrase title="th_import_from_uploaded_csv_file_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Import from uploaded CSV file]]></phrase>
+    <phrase title="th_import_this_user_userimpex" version_id="1404386528" version_string="1.0.0"><![CDATA[Import this User]]></phrase>
+    <phrase title="th_import_users_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Import Users]]></phrase>
+    <phrase title="th_please_select_at_least_one_user_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Please select at least one user.]]></phrase>
+    <phrase title="th_please_upload_valid_users_csv_file_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Please upload a valid users CSV file.]]></phrase>
+    <phrase title="th_please_upload_valid_users_xml_file_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[Please upload a valid users XML file.]]></phrase>
+    <phrase title="th_provided_file_is_not_valid_users_xml_userimpex" version_id="1404305841" version_string="1.0.0"><![CDATA[The provided file is not valid Users XML.]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates/>
+  <public_template_modifications>
+    <modification template="footer" modification_key="th_copyrightNotice_userImpEx" description="Copyright notice for [⌂] User Import and Export" execution_order="1" enabled="1" action="callback">
+      <find><![CDATA[/{xen:phrase (?:xenforo|extra)_copyright}/]]></find>
+      <replace><![CDATA[ThemeHouse_Listener_InitDependencies::copyrightNotice]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
